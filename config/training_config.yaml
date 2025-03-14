@@ -1,12 +1,12 @@
 # Model parameters
-model_name: "google/gemma-3-4b-it"
+model_name: "google/gemma-3-1b-it"
 lora_r: 16
 lora_alpha: 32
 lora_target_modules: "all-linear"  # Or specify a list of modules
 
 # Data parameters
-train_data_path: "gemma3-reasoning/data/gsm8k/train.jsonl"
-eval_data_path: "gemma3-reasoning/data/gsm8k/test.jsonl"
+train_data_path: "data/gsm8k/train.jsonl"
+eval_data_path: "data/gsm8k/test.jsonl"
 max_prompt_length: 256
 max_completion_length: 1024
 # Training parameters
@@ -19,7 +19,7 @@ save_steps: 250
 warmup_ratio: 0.1
 weight_decay: 0.1
 report_to: "none"
-output_dir: "gemma3-reasoning/output"  # Where to save the model weights
+output_dir: "output"  # Where to save the model weights
 logging_steps: 1
 
 #GRPO Parameters

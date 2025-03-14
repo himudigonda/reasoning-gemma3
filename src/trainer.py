@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def create_grpo_trainer(model, tokenizer, reward_funcs, training_config, train_dataset):
+def create_grpo_trainer(model, reward_funcs, training_config, train_dataset):
     """Creates and configures the GRPOTrainer."""
     logger.debug("trainer.create_grpo_trainer :: Entering function")
 
@@ -18,7 +18,7 @@ def create_grpo_trainer(model, tokenizer, reward_funcs, training_config, train_d
             weight_decay=training_config["weight_decay"],
             warmup_ratio=training_config["warmup_ratio"],
             lr_scheduler_type="cosine",
-            optim="adamw_8bit",
+            optim="adamw_torch",  # Changed from "adamw_8bit" to be compatible with MPS
             logging_steps=training_config["logging_steps"],
             per_device_train_batch_size=training_config["batch_size"],
             gradient_accumulation_steps=training_config["gradient_accumulation_steps"],
@@ -50,8 +50,7 @@ def create_grpo_trainer(model, tokenizer, reward_funcs, training_config, train_d
         logger.info("trainer.create_grpo_trainer :: Creating GRPOTrainer")
         trainer = GRPOTrainer(
             model=model,
-            tokenizer=tokenizer,
-            reward_funcs=reward_funcs,
+            reward_funcs=reward_funcs,  # Removed tokenizer from here
             args=training_args,
             train_dataset=train_dataset,
         )

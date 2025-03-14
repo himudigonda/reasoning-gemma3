@@ -92,8 +92,9 @@ def main(config_path):
     try:
         logger.info("train.main :: Creating trainer")
         trainer = create_grpo_trainer(
-            model, tokenizer, reward_functions, training_config, train_dataset
+            model, reward_functions, training_config, train_dataset
         )
+
         logger.info("train.main :: Trainer created successfully")
     except Exception as e:
         logger.error(f"train.main :: Failed to create trainer: {e}")
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="gemma3-reasoning/config/training_config.yaml",
+        default="config/training_config.yaml",
         help="Path to the training configuration file.",
     )
     args = parser.parse_args()
