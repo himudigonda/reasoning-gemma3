@@ -7,8 +7,10 @@ logger = logging.getLogger(__name__)
 
 def create_grpo_trainer(model, tokenizer, reward_funcs, training_config, train_dataset):
     """Creates and configures the GRPOTrainer."""
+    logger.debug("trainer.create_grpo_trainer :: Entering function")
 
     try:
+        logger.info("trainer.create_grpo_trainer :: Creating GRPOConfig")
         training_args = GRPOConfig(
             learning_rate=training_config["learning_rate"],
             adam_beta1=0.9,
@@ -29,14 +31,23 @@ def create_grpo_trainer(model, tokenizer, reward_funcs, training_config, train_d
             max_grad_norm=0.1,
             report_to=training_config["report_to"],
         )
+        logger.info("trainer.create_grpo_trainer :: GRPOConfig created successfully")
+        logger.debug(
+            f"trainer.create_grpo_trainer :: GRPOConfig parameters: {training_args}"
+        )
     except KeyError as e:
-        logger.error(f"Missing configuration parameter: {e}")
+        logger.error(
+            f"trainer.create_grpo_trainer :: Missing configuration parameter: {e}"
+        )
+        logger.debug("trainer.create_grpo_trainer :: Exiting function with KeyError")
         raise
     except Exception as e:
-        logger.error(f"Failed to create GRPOConfig: {e}")
+        logger.error(f"trainer.create_grpo_trainer :: Failed to create GRPOConfig: {e}")
+        logger.debug("trainer.create_grpo_trainer :: Exiting function with error")
         raise
 
     try:
+        logger.info("trainer.create_grpo_trainer :: Creating GRPOTrainer")
         trainer = GRPOTrainer(
             model=model,
             tokenizer=tokenizer,
@@ -44,8 +55,14 @@ def create_grpo_trainer(model, tokenizer, reward_funcs, training_config, train_d
             args=training_args,
             train_dataset=train_dataset,
         )
+        logger.info("trainer.create_grpo_trainer :: GRPOTrainer created successfully")
     except Exception as e:
-        logger.error(f"Failed to create GRPOTrainer: {e}")
+        logger.error(
+            f"trainer.create_grpo_trainer :: Failed to create GRPOTrainer: {e}"
+        )
+        logger.debug("trainer.create_grpo_trainer :: Exiting function with error")
         raise
 
+    logger.debug("trainer.create_grpo_trainer :: Returning trainer")
+    logger.debug("trainer.create_grpo_trainer :: Exiting function successfully")
     return trainer
