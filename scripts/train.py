@@ -44,29 +44,6 @@ def main(config_path):
         return
 
     try:
-        logger.info("train.main :: Loading training and eval datasets")
-        train_dataset = get_gsm8k_questions("train")
-        if not train_dataset:
-            logger.error(
-                "train.main :: Training dataset is empty or could not be loaded."
-            )
-            logger.debug("train.main :: Exiting function, training dataset empty")
-            return
-        eval_dataset = get_gsm8k_questions("test")
-        if not eval_dataset:
-            logger.error("train.main :: Eval dataset is empty or could not be loaded.")
-            logger.debug("train.main :: Exiting function, eval dataset empty")
-            return
-        logger.info("train.main :: Datasets loaded successfully")
-        logger.debug(
-            f"train.main :: Training dataset size: {len(train_dataset)}, Eval dataset size: {len(eval_dataset)}"
-        )
-    except Exception as e:
-        logger.error(f"train.main :: Failed to load dataset: {e}")
-        logger.debug("train.main :: Exiting function with dataset load error")
-        return
-
-    try:
         logger.info("train.main :: Loading model and processor")
         model, tokenizer = load_model_and_processor(
             training_config["model_name"],
@@ -90,13 +67,43 @@ def main(config_path):
     logger.debug(f"train.main :: Reward functions: {reward_functions}")
 
     try:
+
+        logger.info("train.main :: Loading training and eval datasets")
+        train_dataset = get_gsm8k_questions(
+            model_name=training_config["model_name"],
+            max_prompt_length=training_config["max_prompt_length"],
+            max_completion_length=training_config["max_completion_length"],
+            split="train",
+        )
+        if not train_dataset:
+            logger.error(
+                "train.main :: Training dataset is empty or could not be loaded."
+            )
+            logger.debug("train.main :: Exiting function, training dataset empty")
+            return
+        eval_dataset = get_gsm8k_questions(
+            model_name=training_config["model_name"],
+            max_prompt_length=training_config["max_prompt_length"],
+            max_completion_length=training_config["max_completion_length"],
+            split="test",
+        )
+        if not eval_dataset:
+            logger.error("train.main :: Eval dataset is empty or could not be loaded.")
+            logger.debug("train.main :: Exiting function, eval dataset empty")
+            return
+        logger.info("train.main :: Datasets loaded successfully")
+        logger.debug(
+            f"train.main :: Training dataset size: {len(train_dataset)}, Eval dataset size: {len(eval_dataset)}"
+        )
+    except Exception as e:
+        logger.error(f"train.main :: Failed to load dataset: {e}")
+        logger.debug("train.main :: Exiting function with dataset load error")
+        return
+
+    try:
         logger.info("train.main :: Creating trainer")
         trainer = create_grpo_trainer(
-            model,
-            reward_functions,
-            training_config,
-            train_dataset,
-            tokenizer,  # include tokenizer argument
+            model, reward_functions, training_config, train_dataset
         )
 
         logger.info("train.main :: Trainer created successfully")

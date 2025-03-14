@@ -1,6 +1,7 @@
 from datasets import load_dataset
 import logging
 from src.utils import extract_xml_answer
+from transformers import AutoTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,9 @@ Respond in the following format:
 """
 
 
-def get_gsm8k_questions(split="train") -> list[dict]:
+def get_gsm8k_questions(
+    model_name, max_prompt_length, max_completion_length, split="train"
+) -> list[dict]:
     """Loads and pre-processes the GSM8k dataset."""
     logger.debug(
         f"data_loader.get_gsm8k_questions :: Entering function with split: {split}"
@@ -43,6 +46,9 @@ def get_gsm8k_questions(split="train") -> list[dict]:
         )
         return []
 
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    tokenizer.pad_token_id = 0  # Ensure pad token is set
+
     def extract_hash_answer(text: str) -> str | None:
         logger.debug(
             "data_loader.get_gsm8k_questions.extract_hash_answer :: Entering inner function"
@@ -61,28 +67,49 @@ def get_gsm8k_questions(split="train") -> list[dict]:
         )
         return answer
 
-    logger.debug("data_loader.get_gsm8k_questions :: Mapping dataset")
-    data = data.map(
-        lambda x: {  # type: ignore
-            "prompt": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": x["question"]},
-            ],
-            "answer": extract_hash_answer(x["answer"]),
+    def preprocess_function(examples):
+        prompts = [SYSTEM_PROMPT + "\n" + example["question"] for example in examples]
+        answers = [extract_hash_answer(example["answer"]) for example in examples]  # type: ignore
+
+        # Tokenize prompts and answers
+        prompt_tokenized = tokenizer(
+            prompts,
+            padding="max_length",
+            truncation=True,
+            max_length=max_prompt_length,
+            return_tensors="pt",
+        )
+        answer_tokenized = tokenizer(answers, padding="max_length", truncation=True, max_length=max_completion_length, return_tensors="pt")  # type: ignore
+
+        return {
+            "prompt": prompt_tokenized["input_ids"],
+            "answer": answer_tokenized["input_ids"],
+            "attention_mask": prompt_tokenized["attention_mask"],
         }
-    )  # type: ignore
+
+    logger.debug("data_loader.get_gsm8k_questions :: Mapping dataset")
+    processed_data = data.map(
+        preprocess_function,
+        batched=True,
+        remove_columns=data.column_names,
+    )
     logger.debug("data_loader.get_gsm8k_questions :: Dataset mapping complete")
     logger.debug(
-        f"data_loader.get_gsm8k_questions :: Returning dataset with {len(data)} examples"
+        f"data_loader.get_gsm8k_questions :: Returning dataset with {len(processed_data)} examples"
     )
     logger.debug("data_loader.get_gsm8k_questions :: Exiting function successfully")
-    return data  # type: ignore
+    return processed_data
 
 
 if __name__ == "__main__":
     # Example usage (for testing)
     logger.info("data_loader :: Running example usage")
-    train_dataset = get_gsm8k_questions("train")
+    train_dataset = get_gsm8k_questions(
+        model_name="google/gemma-3-1b-it",
+        max_prompt_length=256,
+        max_completion_length=1024,
+        split="train",
+    )
     if train_dataset:
         logger.info(f"data_loader :: Loaded {len(train_dataset)} training examples.")
     else:

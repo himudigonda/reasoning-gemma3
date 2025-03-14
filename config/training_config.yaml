@@ -5,10 +5,10 @@ lora_alpha: 32
 lora_target_modules: "all-linear"  # Or specify a list of modules
 
 # Data parameters
-train_data_path: "data/gsm8k/train.jsonl"
-eval_data_path: "data/gsm8k/test.jsonl"
-max_prompt_length: 256
-max_completion_length: 1024
+# train_data_path: "data/gsm8k/train.jsonl" # removing this as we will pass the model to the function
+# eval_data_path: "data/gsm8k/test.jsonl"
+max_prompt_length: 512 # making sure it matches
+max_completion_length: 512 # making sure it matches
 # Training parameters
 learning_rate: 5.0e-6
 batch_size: 2
