@@ -92,7 +92,11 @@ def main(config_path):
     try:
         logger.info("train.main :: Creating trainer")
         trainer = create_grpo_trainer(
-            model, reward_functions, training_config, train_dataset
+            model,
+            reward_functions,
+            training_config,
+            train_dataset,
+            tokenizer,  # include tokenizer argument
         )
 
         logger.info("train.main :: Trainer created successfully")
@@ -113,7 +117,9 @@ def main(config_path):
     try:
         logger.info(f"train.main :: Saving model to {training_config['output_dir']}")
         model.save_pretrained(training_config["output_dir"])
-        tokenizer.save_pretrained(training_config["output_dir"])  # Save tokenizer too
+        tokenizer.save_pretrained(
+            training_config["output_dir"]
+        )  # Save tokenizer too # not in line 364, removing from here as well
         logger.info(f"train.main :: Model saved to {training_config['output_dir']}")
     except Exception as e:
         logger.error(f"train.main :: Failed to save model: {e}")

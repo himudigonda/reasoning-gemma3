@@ -2,7 +2,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from peft import LoraConfig, get_peft_model
 import torch
 import logging
-from accelerate import dispatch_model
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +33,10 @@ def load_model_and_processor(
             device_map="auto" if device == "mps" else "cpu",
             torch_dtype=torch_dtype,
             trust_remote_code=True,
+            attn_implementation="eager",
         )
-
-        # Enable gradient checkpointing to reduce memory usage
-        model.gradient_checkpointing_enable()
-
-        # Offload unused layers to CPU to prevent excessive memory allocation
-        model = dispatch_model(model, device_map={"": device})
-
+        # send model to device
+        model = model.to(device)
         logger.info("model.load_model_and_processor :: Model loaded successfully")
     except Exception as e:
         logger.error(f"model.load_model_and_processor :: Failed to load the model: {e}")

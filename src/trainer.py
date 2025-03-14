@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def create_grpo_trainer(model, reward_funcs, training_config, train_dataset):
+def create_grpo_trainer(model, reward_funcs, training_config, train_dataset, tokenizer):
     """Creates and configures the GRPOTrainer."""
     logger.debug("trainer.create_grpo_trainer :: Entering function")
 
@@ -50,7 +50,8 @@ def create_grpo_trainer(model, reward_funcs, training_config, train_dataset):
         logger.info("trainer.create_grpo_trainer :: Creating GRPOTrainer")
         trainer = GRPOTrainer(
             model=model,
-            reward_funcs=reward_funcs,  # Removed tokenizer from here
+            processing_class=tokenizer,  # Reverting processor to tokenizer
+            reward_funcs=reward_funcs,
             args=training_args,
             train_dataset=train_dataset,
         )
